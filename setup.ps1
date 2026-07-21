@@ -1,63 +1,81 @@
-Write-Host "=============================="
-Write-Host "   Vedak Laptop Setup"
-Write-Host "=============================="
-Write-Host ""
-Write-Host "1. Install Google Chrome"
-Write-Host "2. Install Hubstaff"
-Write-Host "3. Install Both"
-Write-Host "4. Exit"
-Write-Host ""
+Clear-Host
 
-$choice = Read-Host "Enter your choice (1-4)"
+function Install-App {
+    param (
+        [string]$Name,
+        [string]$WingetId
+    )
 
-if ($choice -eq "1") {
+    Write-Host ""
+    Write-Host "Installing $Name..." -ForegroundColor Yellow
 
-    Write-Host "Installing Google Chrome..."
+    winget install --id $WingetId -e --silent --accept-package-agreements --accept-source-agreements
 
-    winget install --id Google.Chrome -e --silent --accept-package-agreements --accept-source-agreements
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "✓ $Name installed successfully." -ForegroundColor Green
+    }
+    else {
+        Write-Host "✗ Failed to install $Name." -ForegroundColor Red
+    }
 
-    Write-Host "Google Chrome installation completed successfully!"
-
+    Pause
 }
 
-elseif ($choice -eq "2") {
+while ($true) {
 
-    Write-Host "Installing Hubstaff..."
+    Clear-Host
 
-    winget install --id Hubstaff.Hubstaff -e --silent --accept-package-agreements --accept-source-agreements
+    Write-Host "==========================================" -ForegroundColor Cyan
+    Write-Host "        Vedak Laptop Setup v2.0" -ForegroundColor Green
+    Write-Host "==========================================" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "1. Google Chrome"
+    Write-Host "2. Hubstaff"
+    Write-Host "3. AnyDesk"
+    Write-Host "4. Install All"
+    Write-Host "0. Exit"
+    Write-Host ""
 
-    Write-Host "Hubstaff installation completed successfully!"
+    $choice = Read-Host "Select an option"
 
+    switch ($choice) {
+
+        "1" {
+            Install-App "Google Chrome" "Google.Chrome"
+        }
+
+        "2" {
+            Install-App "Hubstaff" "Netsoft.Hubstaff"
+        }
+
+        "3" {
+            Install-App "AnyDesk" "AnyDeskSoftwareGmbH.AnyDesk"
+        }
+
+        "4" {
+
+            Install-App "Google Chrome" "Google.Chrome"
+
+            Install-App "Hubstaff" "Netsoft.Hubstaff"
+
+            Install-App "AnyDesk" "AnyDeskSoftwareGmbH.AnyDesk"
+
+            Write-Host ""
+            Write-Host "==========================================" -ForegroundColor Green
+            Write-Host "All selected software installed." -ForegroundColor Green
+            Write-Host "==========================================" -ForegroundColor Green
+
+            Pause
+        }
+
+        "0" {
+            break
+        }
+
+        Default {
+            Write-Host ""
+            Write-Host "Invalid option." -ForegroundColor Red
+            Pause
+        }
+    }
 }
-
-elseif ($choice -eq "3") {
-
-    Write-Host "Installing Google Chrome..."
-
-    winget install --id Google.Chrome -e --silent --accept-package-agreements --accept-source-agreements
-
-    Write-Host "Google Chrome installation completed!"
-
-    Write-Host "Installing Hubstaff..."
-
-    winget install --id Hubstaff.Hubstaff -e --silent --accept-package-agreements --accept-source-agreements
-
-    Write-Host "Hubstaff installation completed!"
-
-}
-
-elseif ($choice -eq "4") {
-
-    Write-Host "Exiting..."
-    exit
-
-}
-
-else {
-
-    Write-Host "Invalid choice"
-
-}
-
-Write-Host ""
-Write-Host "Vedak setup completed!"
