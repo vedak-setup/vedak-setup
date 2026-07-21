@@ -13,24 +13,36 @@ $choice = Read-Host "Enter your choice (1-4)"
 if ($choice -eq "1") {
 
     Write-Host "Installing Google Chrome..."
+
     winget install --id Google.Chrome -e --silent --accept-package-agreements --accept-source-agreements
+
+    Write-Host "Google Chrome installation completed successfully!"
 
 }
 
 elseif ($choice -eq "2") {
 
     Write-Host "Installing Hubstaff..."
+
     winget install --id Hubstaff.Hubstaff -e --silent --accept-package-agreements --accept-source-agreements
+
+    Write-Host "Hubstaff installation completed successfully!"
 
 }
 
 elseif ($choice -eq "3") {
 
     Write-Host "Installing Google Chrome..."
+
     winget install --id Google.Chrome -e --silent --accept-package-agreements --accept-source-agreements
 
+    Write-Host "Google Chrome installation completed!"
+
     Write-Host "Installing Hubstaff..."
+
     winget install --id Hubstaff.Hubstaff -e --silent --accept-package-agreements --accept-source-agreements
+
+    Write-Host "Hubstaff installation completed!"
 
 }
 
