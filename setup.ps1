@@ -1,85 +1,68 @@
-Clear-Host
+$BaseUrl = "https://raw.githubusercontent.com/vedak-setup/vedak-setup/v2-development/Modules"
 
-function Install-Chrome {
+$Modules = @(
+    "Common.ps1",
+    "Install-Chrome.ps1",
+    "Install-Hubstaff.ps1",
+    "Install-AnyDesk.ps1",
+    "Microsoft-Sync.ps1",
+    "Browser-Cleanup.ps1",
+    "About.ps1"
+)
 
-    Clear-Host
-    Write-Host ""
-    Write-Host "Installing Google Chrome..." -ForegroundColor Yellow
-    Write-Host ""
-
-    winget install --id Google.Chrome --source winget -e --accept-package-agreements --accept-source-agreements
-
-    Write-Host ""
-    Write-Host "Press Enter to return to menu..."
-    Read-Host
+foreach ($Module in $Modules) {
+    try {
+        Invoke-Expression (Invoke-RestMethod "$BaseUrl/$Module")
+    }
+    catch {
+        Write-Host ""
+        Write-Host "Failed to load module: $Module" -ForegroundColor Red
+        Write-Host $_.Exception.Message -ForegroundColor Yellow
+        Read-Host "Press Enter to exit"
+        exit
+    }
 }
 
-function Install-Hubstaff {
+do {
 
-    Clear-Host
-    Write-Host ""
-    Write-Host "Installing Hubstaff..." -ForegroundColor Yellow
-    Write-Host ""
+    Show-Header
 
-    winget install --id Netsoft.Hubstaff --source winget -e --accept-package-agreements --accept-source-agreements
-
-    Write-Host ""
-    Write-Host "Press Enter to return to menu..."
-    Read-Host
-}
-
-function Install-AnyDesk {
-
-    Clear-Host
-    Write-Host ""
-    Write-Host "Installing AnyDesk..." -ForegroundColor Yellow
+    Write-Host "1. Install Google Chrome"
+    Write-Host "2. Install Hubstaff"
+    Write-Host "3. Install AnyDesk"
+    Write-Host "4. Microsoft Sync Configuration"
+    Write-Host "5. Browser Cleanup"
+    Write-Host "6. About"
+    Write-Host "7. Exit"
     Write-Host ""
 
-    winget install --id AnyDeskSoftwareGmbH.AnyDesk --source winget -e --accept-package-agreements --accept-source-agreements
+    $Choice = Read-Host "Enter your choice"
 
-    Write-Host ""
-    Write-Host "Press Enter to return to menu..."
-    Read-Host
-}
+    switch ($Choice) {
 
-while ($true) {
+        "1" { Install-Chrome }
 
-    Clear-Host
+        "2" { Install-Hubstaff }
 
-    Write-Host "==========================================" -ForegroundColor Cyan
-    Write-Host "          Vedak IT Toolkit" -ForegroundColor Green
-    Write-Host "==========================================" -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host "1. Google Chrome"
-    Write-Host "2. Hubstaff"
-    Write-Host "3. AnyDesk"
-    Write-Host "0. Exit"
-    Write-Host ""
+        "3" { Install-AnyDesk }
 
-    $choice = Read-Host "Select an option"
+        "4" { Start-MicrosoftSync }
 
-    switch ($choice) {
+        "5" { Start-BrowserCleanup }
 
-        "1" {
-            Install-Chrome
-        }
+        "6" { Show-About }
 
-        "2" {
-            Install-Hubstaff
-        }
-
-        "3" {
-            Install-AnyDesk
-        }
-
-        "0" {
+        "7" {
+            Write-Host ""
+            Write-Host "Thank you for using Vedak IT Toolkit." -ForegroundColor Green
             break
         }
 
         default {
             Write-Host ""
-            Write-Host "Invalid option." -ForegroundColor Red
+            Write-Host "Invalid choice. Please try again." -ForegroundColor Red
             Start-Sleep -Seconds 2
         }
     }
-}
+
+} while ($Choice -ne "7")
