@@ -1,8 +1,32 @@
 # ==============================================================================
 # Module: Browser Cleanup
+# Script Name: Browser-Cleanup.ps1
+# Description: Automated cleanup for Google Chrome and Microsoft Edge
 # ==============================================================================
 
 function Get-ChromeUserProfiles {
+
+    param([string]$UserDataPath)
+
+    $Profiles = @()
+
+    if (Test-Path $UserDataPath) {
+
+        if (Test-Path (Join-Path $UserDataPath "Default")) {
+            $Profiles += (Join-Path $UserDataPath "Default")
+        }
+
+        Get-ChildItem $UserDataPath -Directory -Filter "Profile *" -ErrorAction SilentlyContinue | ForEach-Object {
+            $Profiles += $_.FullName
+        }
+
+    }
+
+    return $Profiles
+
+}
+
+function Get-EdgeUserProfiles {
 
     param([string]$UserDataPath)
 
@@ -28,8 +52,6 @@ function Invoke-ChromeCleanup {
 
     Show-Header "Google Chrome Cleanup"
 
-    # Check Chrome Installed
-
     $ChromeInstalled = Test-Path "$env:ProgramFiles\Google\Chrome\Application\chrome.exe" `
         -or Test-Path "$env:ProgramFiles(x86)\Google\Chrome\Application\chrome.exe" `
         -or Test-Path "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe"
@@ -43,8 +65,6 @@ function Invoke-ChromeCleanup {
         return
 
     }
-
-    # Check Running
 
     $Chrome = Get-Process chrome -ErrorAction SilentlyContinue
 
@@ -70,60 +90,103 @@ function Invoke-ChromeCleanup {
 
     Write-Host ""
 
-    Write-Info "Cleaning browser data..."
+    Write-Info "Cleaning Chrome browser data..."
 
     $UserData = "$env:LOCALAPPDATA\Google\Chrome\User Data"
 
     foreach ($Profile in Get-ChromeUserProfiles $UserData) {
 
         Remove-Item "$Profile\History" -Force -ErrorAction SilentlyContinue
-
         Remove-Item "$Profile\Cookies" -Force -ErrorAction SilentlyContinue
-
         Remove-Item "$Profile\Network\Cookies" -Force -ErrorAction SilentlyContinue
 
-        @(
-            "Cache",
-            "Code Cache",
-            "GPUCache"
-        ) | ForEach-Object {
-
+        @("Cache", "Code Cache", "GPUCache") | ForEach-Object {
             $Folder = Join-Path $Profile $_
-
             if (Test-Path $Folder) {
-
                 Remove-Item "$Folder\*" -Force -Recurse -ErrorAction SilentlyContinue
-
             }
-
         }
 
     }
 
-    Write-Success "Browser cleanup completed."
+    Write-Success "Google Chrome cleanup completed."
 
     Write-Host ""
     Write-Host "==============================================" -ForegroundColor Cyan
+    Write-Host "Removed: Browsing History, Cookies, Cache, Download History" -ForegroundColor Green
+    Write-Host "Preserved: Downloads Folder, Bookmarks, Saved Passwords, Extensions" -ForegroundColor Cyan
+    Write-Host "==============================================" -ForegroundColor Cyan
+
+    Pause-Toolkit
+
+}
+
+function Invoke-EdgeCleanup {
+
+    Show-Header "Microsoft Edge Cleanup"
+
+    $EdgeInstalled = Test-Path "$env:ProgramFiles(x86)\Microsoft\Edge\Application\msedge.exe" `
+        -or Test-Path "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe"
+
+    if (-not $EdgeInstalled) {
+
+        Write-WarningMessage "Microsoft Edge is not installed."
+        Write-WarningMessage "Nothing to clean."
+
+        Pause-Toolkit
+        return
+
+    }
+
+    $Edge = Get-Process msedge -ErrorAction SilentlyContinue
+
+    if ($Edge) {
+
+        Write-Info "Edge Status : Running"
+        Write-Host ""
+
+        Write-Info "Closing Microsoft Edge..."
+
+        Stop-Process -Name msedge -Force -ErrorAction SilentlyContinue
+
+        Start-Sleep 2
+
+        Write-Success "Microsoft Edge closed successfully."
+
+    }
+    else {
+
+        Write-Info "Edge Status : Closed"
+
+    }
+
     Write-Host ""
 
-    Write-Success "Removed"
+    Write-Info "Cleaning Edge browser data..."
 
-    Write-Host "✔ Browsing History"
-    Write-Host "✔ Cookies"
-    Write-Host "✔ Cache"
-    Write-Host "✔ Download History"
+    $EdgeUserData = "$env:LOCALAPPDATA\Microsoft\Edge\User Data"
+
+    foreach ($Profile in Get-EdgeUserProfiles $EdgeUserData) {
+
+        Remove-Item "$Profile\History" -Force -ErrorAction SilentlyContinue
+        Remove-Item "$Profile\Cookies" -Force -ErrorAction SilentlyContinue
+        Remove-Item "$Profile\Network\Cookies" -Force -ErrorAction SilentlyContinue
+
+        @("Cache", "Code Cache", "GPUCache") | ForEach-Object {
+            $Folder = Join-Path $Profile $_
+            if (Test-Path $Folder) {
+                Remove-Item "$Folder\*" -Force -Recurse -ErrorAction SilentlyContinue
+            }
+        }
+
+    }
+
+    Write-Success "Microsoft Edge cleanup completed."
 
     Write-Host ""
-
-    Write-Info "Preserved"
-
-    Write-Host "✔ Downloads Folder"
-    Write-Host "✔ Bookmarks"
-    Write-Host "✔ Saved Passwords"
-    Write-Host "✔ Extensions"
-
-    Write-Host ""
-
+    Write-Host "==============================================" -ForegroundColor Cyan
+    Write-Host "Removed: Browsing History, Cookies, Cache, Download History" -ForegroundColor Green
+    Write-Host "Preserved: Downloads Folder, Bookmarks, Saved Passwords, Extensions" -ForegroundColor Cyan
     Write-Host "==============================================" -ForegroundColor Cyan
 
     Pause-Toolkit
@@ -154,21 +217,14 @@ function Show-BrowserCleanupMenu {
 
             "2" {
 
-                Show-Header "Browser Cleanup"
-
-                Write-WarningMessage "Microsoft Edge Cleanup is under development."
-
-                Pause-Toolkit
+                Invoke-EdgeCleanup
 
             }
 
             "3" {
 
-                Show-Header "Browser Cleanup"
-
-                Write-WarningMessage "Clean Both Browsers is under development."
-
-                Pause-Toolkit
+                Invoke-ChromeCleanup
+                Invoke-EdgeCleanup
 
             }
 
